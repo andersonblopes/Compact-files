@@ -27,23 +27,28 @@ public class CompactFile {
 		try {
 			File inFolder = new File(sourceFolder);
 			File outFolder = new File(destinationFile);
-			ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(outFolder)));
-			BufferedInputStream in = null;
-			byte[] data = new byte[1000];
-			String files[] = inFolder.list();
-			for (int i = 0; i < files.length; i++) {
-				in = new BufferedInputStream(new FileInputStream(inFolder.getPath() + "/" + files[i]), 1000);
-				out.putNextEntry(new ZipEntry(files[i]));
-				int count;
-				while ((count = in.read(data, 0, 1000)) != -1) {
-					out.write(data, 0, count);
+			if (inFolder.exists()) {
+				ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(outFolder)));
+				BufferedInputStream in = null;
+				byte[] data = new byte[1000];
+				String files[] = inFolder.list();
+				for (int i = 0; i < files.length; i++) {
+					in = new BufferedInputStream(new FileInputStream(inFolder.getPath() + "/" + files[i]), 1000);
+					out.putNextEntry(new ZipEntry(files[i]));
+					int count;
+					while ((count = in.read(data, 0, 1000)) != -1) {
+						out.write(data, 0, count);
+					}
+					out.closeEntry();
 				}
-				out.closeEntry();
+				out.flush();
+				out.close();
+				LOG.info("========== Process completed successfully ==========");
+			} else {
+				LOG.severe("Directory not found");
 			}
-			out.flush();
-			out.close();
-			LOG.info("========== Process completed successfully ==========");
 		} catch (Exception e) {
+			LOG.severe("Process failed: ");
 			e.printStackTrace();
 		}
 	}
