@@ -23,7 +23,7 @@ public class CompactFile {
 		zipFiles(sourceFolder, destinationFile);
 	}
 
-	static public void zipFiles(String sourceFolder, String destinationFile) {
+	public static void zipFiles(String sourceFolder, String destinationFile) {
 		try {
 			File inFolder = new File(sourceFolder);
 			File outFolder = new File(destinationFile);
