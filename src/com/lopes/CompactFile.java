@@ -1,97 +1,51 @@
 package com.lopes;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
+import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 public class CompactFile {
 
-	public static void main(String[] a) throws Exception {
+	private static final Logger LOG = Logger.getLogger(CompactFile.class.getName());
 
-		String directoryIn = "D:\\in";
-		// String fileNameToCompact = "a.csv";
-		String fileNameToCompact = "ALL";
-		String pathFileOut = "D:\\out" + File.separator + removeExtension(fileNameToCompact) + ".zip";
+	public static void main(String[] args) {
+		LOG.info("========== Starting File Compression ==========");
 
-		compactFiles(directoryIn, fileNameToCompact, pathFileOut);
-
-		readOnlyOneZipFile(pathFileOut);
-
+		String sourceFolder = "/home/anderson/Documentos/Anderson/teste/csv";
+		String destinationFolder = "/home/anderson/Documentos/Anderson/teste";
+		String nameZipFile = "csv.zip";
+		String destinationFile = destinationFolder + File.separator + nameZipFile;
+		zipFiles(sourceFolder, destinationFile);
 	}
 
-	public static void compactFiles(String directoryIn, String fileNameToCompact, String pathFileOut) {
-		if (fileNameToCompact != null && !fileNameToCompact.equals("ALL")) {
-			directoryIn = directoryIn + File.separator + fileNameToCompact;
-			compactOneFile(directoryIn, pathFileOut, fileNameToCompact);
-		} else {
-			compactAllFile(directoryIn, pathFileOut);
-		}
-	}
-
-	static void compactOneFile(String directoryIn, String pathFileOut, String fileNameToCompact) {
+	static public void zipFiles(String sourceFolder, String destinationFile) {
 		try {
-			FileInputStream fis = new FileInputStream(directoryIn);
-			FileOutputStream fos = new FileOutputStream(pathFileOut);
-			ZipOutputStream zipOut = new ZipOutputStream(fos);
-			zipOut.putNextEntry(new ZipEntry(fileNameToCompact));
-			int content;
-			while ((content = fis.read()) != -1) {
-				zipOut.write(content);
-			}
-			zipOut.closeEntry();
-			zipOut.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
-	private static void compactAllFile(String directoryIn, String pathFileOut) {
-		try {
-			FileOutputStream fos = new FileOutputStream(pathFileOut);
-			ZipOutputStream zipOut = new ZipOutputStream(fos);
-			File folder = new File(directoryIn);
-			for (File arq : folder.listFiles()) {
-				zipOut.putNextEntry(new ZipEntry(arq.getName().toString()));
-				FileInputStream fis = new FileInputStream(arq);
-				int content;
-				while ((content = fis.read()) != -1) {
-					zipOut.write(content);
+			File inFolder = new File(sourceFolder);
+			File outFolder = new File(destinationFile);
+			ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(outFolder)));
+			BufferedInputStream in = null;
+			byte[] data = new byte[1000];
+			String files[] = inFolder.list();
+			for (int i = 0; i < files.length; i++) {
+				in = new BufferedInputStream(new FileInputStream(inFolder.getPath() + "/" + files[i]), 1000);
+				out.putNextEntry(new ZipEntry(files[i]));
+				int count;
+				while ((count = in.read(data, 0, 1000)) != -1) {
+					out.write(data, 0, count);
 				}
-				zipOut.closeEntry();
+				out.closeEntry();
 			}
-			zipOut.close();
-		} catch (IOException e) {
+			out.flush();
+			out.close();
+			LOG.info("========== Process completed successfully ==========");
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
-	private static void readOnlyOneZipFile(String pathFileOut) {
-		try {
-			FileInputStream fis = new FileInputStream(pathFileOut);
-			ZipInputStream zipIn = new ZipInputStream(fis);
-			ZipEntry entry = zipIn.getNextEntry();
-
-			StringBuilder textOfFile = new StringBuilder();
-
-			while (zipIn.available() > 0) {
-				textOfFile.append((char) zipIn.read());
-			}
-
-			System.out.println(textOfFile.toString());
-
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
-	static String removeExtension(String fileName) {
-		if (fileName.contains(".")) {
-			fileName = fileName.substring(0, fileName.indexOf("."));
-		}
-		return fileName;
-	}
 }
